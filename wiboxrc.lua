@@ -1,5 +1,46 @@
 local awful = require("awful")
+local beautiful = require("beautiful")
+local vicious = require("vicious")
 local wibox = require("wibox")
+
+-- {{{ My widgets
+
+-- {{{ Spacers
+spacer = wibox.widget.textbox()
+spacer:set_text(' ')
+
+spacerbar = wibox.widget.textbox()
+spacerbar:set_text(' | ')
+
+volspace = wibox.widget.textbox()
+volspace:set_text(' ')
+-- }}}
+
+-- {{{ Volume
+-- Cache
+vicious.cache(vicious.widgets.volume)
+
+-- Icon
+volicon = wibox.widget.imagebox()
+volicon:set_image(beautiful.widget_vol)
+
+-- Volume %
+volpct = wibox.widget.textbox()
+vicious.register(volpct, vicious.widgets.volume, "$1%", nil, "Master")
+
+-- Buttons
+volicon:buttons(awful.util.table.join(
+    awful.button({ }, 1,
+                 function () awful.util.spawn("amixer -q set Master toggle", false) end),
+    awful.button({ }, 4,
+                 function () awful.util.spawn("amixer -q set Master 2+% unmute", false) end),
+    awful.button({ }, 5,
+                 function () awful.util.spawn("amixer -q set Master 2-% unmute", false) end)))
+volpct:buttons(volicon:buttons())
+volspace:buttons(volicon:buttons())
+-- }}}
+
+-- }}}
 
 -- {{{ Wibox
 -- Create a textclock widget
@@ -71,7 +112,7 @@ for s = 1, screen.count() do
     mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons)
 
     -- Create the wibox
-    mywibox[s] = awful.wibox({ position = "top", screen = s })
+    mywibox[s] = awful.wibox({ position = "top", height = 16, screen = s })
 
     -- Widgets that are aligned to the left
     local left_layout = wibox.layout.fixed.horizontal()
@@ -83,6 +124,9 @@ for s = 1, screen.count() do
     local right_layout = wibox.layout.fixed.horizontal()
     if s == 1 then right_layout:add(wibox.widget.systray()) end
     right_layout:add(mytextclock)
+    right_layout:add(volicon)
+    right_layout:add(volpct)
+    right_layout:add(volspace)
     right_layout:add(mylayoutbox[s])
 
     -- Now bring it all together (with the tasklist in the middle)

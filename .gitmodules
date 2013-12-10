@@ -1,0 +1,4 @@
+[submodule "themes"]
+    path = themes
+    url = https://github.com/mikar/awesome-themes.git
+    ignore = untracked
